@@ -1,0 +1,25 @@
+{
+  "id": "nothing",
+  "name": "Nothing-inspired",
+  "inspiration": "Nothing / Nothing OS visual design (https://nothing.tech/). Independent fan interpretation, not an official asset pack.",
+  "canvas": {
+    "minimumPixels": 1024,
+    "maximumPixels": 4096,
+    "shape": "square",
+    "outsideTile": "transparent",
+    "tileFraction": 0.8
+  },
+  "palette": {
+    "tile": "#191919",
+    "glyph": "#F5F3EB",
+    "accent": "#EE2028"
+  },
+  "prompt": "Create one macOS app icon using the documented palette and geometry. A large recognizable app glyph on a charcoal rounded square, warm ivory glyph and restrained signal-red accent. Transparent outside the tile. Subtle matte shading, calm industrial graphic style; no external shadow, no neon, no tiny decorations, no app-name labels. Preserve the app's recognizable identity without presenting this as official artwork. The same asset must remain readable against light and dark backgrounds at 32-64px.",
+  "references": [],
+  "themePolicy": "Use one fixed image for light and dark. macOS Clear/Tinted can transform its displayed material or colors; changing appearance does not remove the stored custom icon.",
+  "generation": {
+    "provider": "Built-in image_gen by default",
+    "automaticApply": false,
+    "automaticRelaunch": false
+  }
+}

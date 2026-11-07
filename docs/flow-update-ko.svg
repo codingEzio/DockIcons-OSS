@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:lang="ko" width="360" height="488"
+  viewBox="0 0 360 488">
+  <!-- SPDX-License-Identifier: MPL-2.0; original project documentation diagram. See LICENSE. Viewer fonts are references only; no font bytes embedded. -->
+  <style>
+  text {
+    font-family: Apple SD Gothic Neo, Noto Sans CJK KR,sans-serif;
+    fill: #252523;
+  }
+  </style>
+  <rect width="360" height="488" rx="12" fill="#f5f3ee" />
+  <text x="24" y="30" font-size="13">App icon update</text>
+  <rect x="24" y="52" width="312" height="60" rx="8" fill="#fffefb" stroke="#aaa99f" />
+  <circle cx="40" cy="82" r="3" fill="#dc3c30" />
+  <text x="192" y="87" font-size="12" text-anchor="middle">App 식별과 자산 확인</text>
+  <path d="M180 116v13m-3-4 3 4 3-4" fill="none" stroke="#6a6a64" />
+  <rect x="24" y="136" width="312" height="60" rx="8" fill="#fffefb" stroke="#aaa99f" />
+  <circle cx="40" cy="166" r="3" fill="#dc3c30" />
+  <text x="192" y="171" font-size="12" text-anchor="middle">원본 저장과 읽기 확인</text>
+  <path d="M180 200v13m-3-4 3 4 3-4" fill="none" stroke="#6a6a64" />
+  <rect x="24" y="220" width="312" height="60" rx="8" fill="#fffefb" stroke="#aaa99f" />
+  <circle cx="40" cy="250" r="3" fill="#dc3c30" />
+  <text x="192" y="255" font-size="12" text-anchor="middle">Finder 사용자 아이콘 설정</text>
+  <path d="M180 284v13m-3-4 3 4 3-4" fill="none" stroke="#6a6a64" />
+  <rect x="24" y="304" width="312" height="60" rx="8" fill="#fffefb" stroke="#aaa99f" />
+  <circle cx="40" cy="334" r="3" fill="#dc3c30" />
+  <text x="192" y="339" font-size="12" text-anchor="middle">아이콘과 정상 서명 읽기 확인</text>
+  <path d="M180 368v13m-3-4 3 4 3-4" fill="none" stroke="#6a6a64" />
+  <rect x="24" y="388" width="312" height="60" rx="8" fill="#fffefb" stroke="#aaa99f" />
+  <circle cx="40" cy="418" r="3" fill="#dc3c30" />
+  <text x="192" y="423" font-size="12"
+    text-anchor="middle">직접 Dock 새로고침／필요시 App 재열기</text>
+</svg>

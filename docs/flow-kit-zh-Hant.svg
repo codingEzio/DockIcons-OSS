@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:lang="zh-Hant" width="360" height="488"
+  viewBox="0 0 360 488">
+  <!-- SPDX-License-Identifier: MPL-2.0; original project documentation diagram. See LICENSE. Viewer fonts are references only; no font bytes embedded. -->
+  <style>
+  text {
+    font-family: PingFang TC, Noto Sans CJK TC,sans-serif;
+    fill: #252523;
+  }
+  </style>
+  <rect width="360" height="488" rx="12" fill="#f5f3ee" />
+  <text x="24" y="30" font-size="13">Kit on / off</text>
+  <rect x="24" y="52" width="312" height="60" rx="8" fill="#fffefb" stroke="#aaa99f" />
+  <circle cx="40" cy="82" r="3" fill="#dc3c30" />
+  <text x="192" y="87" font-size="12" text-anchor="middle">Kit 開啟／關閉</text>
+  <path d="M180 116v13m-3-4 3 4 3-4" fill="none" stroke="#6a6a64" />
+  <rect x="24" y="136" width="312" height="60" rx="8" fill="#fffefb" stroke="#aaa99f" />
+  <circle cx="40" cy="166" r="3" fill="#dc3c30" />
+  <text x="192" y="171" font-size="12" text-anchor="middle">尋找已安裝目錄 App</text>
+  <path d="M180 200v13m-3-4 3 4 3-4" fill="none" stroke="#6a6a64" />
+  <rect x="24" y="220" width="312" height="60" rx="8" fill="#fffefb" stroke="#aaa99f" />
+  <circle cx="40" cy="250" r="3" fill="#dc3c30" />
+  <text x="192" y="255" font-size="12" text-anchor="middle">每個 App 選擇一個首選版本</text>
+  <path d="M180 284v13m-3-4 3 4 3-4" fill="none" stroke="#6a6a64" />
+  <rect x="24" y="304" width="312" height="60" rx="8" fill="#fffefb" stroke="#aaa99f" />
+  <circle cx="40" cy="334" r="3" fill="#dc3c30" />
+  <text x="192" y="339" font-size="12" text-anchor="middle">既有 CLI：套用／恢復系統預設</text>
+  <path d="M180 368v13m-3-4 3 4 3-4" fill="none" stroke="#6a6a64" />
+  <rect x="24" y="388" width="312" height="60" rx="8" fill="#fffefb" stroke="#aaa99f" />
+  <circle cx="40" cy="418" r="3" fill="#dc3c30" />
+  <text x="192" y="423" font-size="12" text-anchor="middle">獨立讀回與操作回執</text>
+</svg>

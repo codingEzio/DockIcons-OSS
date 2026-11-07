@@ -1,0 +1,21 @@
+{
+  "tasks": {
+    "check": "deno fmt --check src deno.json styles docs README.md README.zh-Hans.md README.zh-Hant.md && deno lint src && deno check src/cli.ts && deno run --allow-read --allow-env src/cli.ts check",
+    "public:check": "deno check scripts/public-check.ts && deno lint scripts/public-check.ts && deno run --allow-read scripts/public-check.ts",
+    "public:prepare": "deno task check && deno task public:test && deno task public:check && deno run --allow-read --allow-write=Local scripts/public-check.ts --export",
+    "public:release-check": "deno run --allow-read scripts/public-check.ts --release",
+    "public:test": "deno test --allow-read --allow-write --allow-run tests/public_check_test.ts",
+    "test": "deno test --allow-read --allow-write --allow-run --allow-env src/kit_test.ts tests/public_check_test.ts tests/admin_test.ts src/safe_output_test.ts tests/backup_guard_test.ts tests/corner_alpha_test.ts"
+  },
+  "fmt": {
+    "lineWidth": 100,
+    "exclude": [
+      "docs/project-icon.svg"
+    ]
+  },
+  "lint": {
+    "rules": {
+      "exclude": []
+    }
+  }
+}
