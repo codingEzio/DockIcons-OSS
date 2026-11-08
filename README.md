@@ -112,8 +112,10 @@ nonzero. App icons are separate from menu-bar icons; these operations are macOS-
 `--catalog /absolute/catalog.json` selects a separate collection with assets relative to that file.
 `--state-dir /absolute/path` overrides `~/Library/Application Support/X-DockIcons`; helper caches
 live in `.local/`. `--app` selects one intended path and still checks identity/protection. Automatic
-discovery checks standard Applications locations and rejects multiple matches instead of guessing.
-Keep backups, local receipts and personal App exports outside the public payload.
+discovery combines registered Apps in standard install locations with direct bundles in Applications
+folders and rejects multiple matches instead of guessing. Unregistered nested Apps are not
+discovered; use `--app` for those. Keep backups, local receipts and personal App exports outside the
+public payload.
 
 The tools use a local Deno CLI and a small AppKit helper. The private owner's original artwork,
 ICNS-derived previews, catalog and history remain preserved outside this tools-only source.

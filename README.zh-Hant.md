@@ -101,8 +101,9 @@ App。重複／已預設路徑也會列出執行中目標。更新／重裝可�
 [catalog.json](catalog.json) 管理身分、雜湊與權利資訊。`--catalog /absolute/catalog.json`
 選擇獨立圖庫， 資源相對此檔案定位。`--state-dir /absolute/path` 覆寫
 `~/Library/Application Support/X-DockIcons`； 輔助程式快取在 `.local/`。`--app`
-選擇單一目標路徑，仍檢查身分與保護規則。自動尋找檢查標準 Applications 位置，
-多份匹配則拒絕猜測。備份、本機收據與個人 App 匯出不得放進公開載荷。
+選擇單一目標路徑，仍檢查身分與保護規則。自動尋找合併標準安裝位置的已註冊 App 與 Applications
+資料夾的直接子項，多份匹配則拒絕猜測。未註冊的巢狀 App 請用 `--app` 指定。備份、本機收據與個人 App
+匯出不得放進公開載荷。
 
 工具使用本機 Deno CLI 與小型 AppKit 輔助程式。私人原始圖稿、ICNS 衍生預覽、圖庫與歷史均保留在
 tools-only 原始碼之外。

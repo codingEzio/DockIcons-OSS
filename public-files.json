@@ -48,6 +48,7 @@
     "tests/backup_guard_test.ts",
     "tests/corner_alpha_test.ts",
     "tests/public_check_test.ts",
-    "tests/config_test.ts"
+    "tests/config_test.ts",
+    "tests/resolve_test.ts"
   ]
 }

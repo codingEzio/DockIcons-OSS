@@ -69,34 +69,52 @@ func validateReadback(_ value: NSImage) {
         }
     }
 }
+// Limit discovery to standard install roots; registered nested Apps and direct bundles are combined.
+func installedCandidates(_ bundleID: String, roots: [String], directRoots: [String], registered: [URL]) throws -> Set<String> {
+    let fm = FileManager.default
+    var matches = Set<String>()
+    func consider(_ url: URL) {
+        let path = url.standardizedFileURL.path
+        guard roots.contains(where: { path.hasPrefix($0 + "/") }),
+              path.hasSuffix(".app") else { return }
+        let canonical = url.resolvingSymlinksInPath().standardizedFileURL.path
+        guard let info = NSDictionary(contentsOfFile: canonical + "/Contents/Info.plist"),
+              info["CFBundleIdentifier"] as? String == bundleID else { return }
+        matches.insert(canonical)
+    }
+    for url in registered { consider(url) }
+    for directory in directRoots {
+        if !fm.fileExists(atPath: directory) { continue }
+        for entry in try fm.contentsOfDirectory(atPath: directory) where entry.hasSuffix(".app") {
+            consider(URL(fileURLWithPath: directory + "/" + entry))
+        }
+    }
+    return matches
+}
+func selectInstalled(_ bundleID: String, roots: [String], directRoots: [String], registered: [URL]) {
+    do {
+        let matches = try installedCandidates(bundleID, roots: roots, directRoots: directRoots, registered: registered)
+        if matches.count > 1 { fail("Multiple installed Apps share this bundle ID; specify --app /path/Name.app") }
+        guard let path = matches.first else { fail("App not found; specify --app /path/Name.app") }
+        emit(["path": path])
+    } catch { fail("Cannot inspect installed App locations: \(error); specify --app /path/Name.app") }
+}
 switch args.count > 1 ? args[1] : "" {
 case "resolve":
     guard args.count == 3 else { fail("resolve BUNDLE_ID") }
-    // Launch Services also registers build candidates, staging Apps and old copies.
-    // Bulk/default discovery must not mutate those merely because they were launched once.
-    let installedRoots = ["/Applications/", NSHomeDirectory() + "/Applications/",
-                          "/System/Applications/", "/System/Library/CoreServices/"]
-    if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: args[2]),
-       installedRoots.contains(where: url.path.hasPrefix),
-       FileManager.default.fileExists(atPath: url.path + "/Contents/Info.plist") {
-        emit(["path": url.path])
-        break
+    let direct = ["/Applications", NSHomeDirectory() + "/Applications"]
+    let roots = direct + ["/System/Applications", "/System/Library/CoreServices"]
+    let registered = NSWorkspace.shared.urlsForApplications(withBundleIdentifier: args[2])
+    selectInstalled(args[2], roots: roots, directRoots: direct, registered: registered)
+case "resolve-fixture":
+    // Read-only isolated fixture hook; no Launch Services or installed App access.
+    guard args.count >= 5, let separator = args.firstIndex(of: "--"), separator >= 4 else {
+        fail("resolve-fixture BUNDLE_ID ROOT... -- REGISTERED_PATH...")
     }
-    // Updates can leave Launch Services unable to resolve an installed App.
-    // Inspect only direct App bundles in the two standard install directories.
-    var matches = Set<String>()
-    for directory in ["/Applications", NSHomeDirectory() + "/Applications"] {
-        guard let entries = try? FileManager.default.contentsOfDirectory(atPath: directory) else { continue }
-        for entry in entries where entry.hasSuffix(".app") {
-            let path = URL(fileURLWithPath: directory + "/" + entry).resolvingSymlinksInPath().path
-            guard let info = NSDictionary(contentsOfFile: path + "/Contents/Info.plist"),
-                  info["CFBundleIdentifier"] as? String == args[2] else { continue }
-            matches.insert(path)
-        }
-    }
-    if matches.count > 1 { fail("Multiple installed Apps share this bundle ID; specify --app /path/Name.app") }
-    guard let path = matches.first else { fail("App not found; specify --app /path/Name.app") }
-    emit(["path": path])
+    let roots = Array(args[3..<separator])
+    guard roots.allSatisfy({ $0.hasPrefix("/") && $0 != "/" }) else { fail("Fixture roots must be absolute") }
+    selectInstalled(args[2], roots: roots, directRoots: roots,
+                    registered: args[(separator + 1)...].map { URL(fileURLWithPath: $0) })
 case "inspect":
     guard args.count == 3 else { fail("inspect APP") }
     let path = target(args[2])
