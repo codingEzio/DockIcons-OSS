@@ -1,5 +1,6 @@
 import { withCatalogLock, withExclusiveOutput } from "./safe_output.ts";
 import { adminMetadata } from "./admin.ts";
+import { loadConfig } from "./config.ts";
 // SPDX-License-Identifier: MPL-2.0
 // Local-only CLI. Generation is performed by the companion agent skill.
 type Icon = {
@@ -26,6 +27,7 @@ type Backup = {
   capturedAt: string;
 };
 const sourceRoot = decodeURIComponent(new URL("../", import.meta.url).pathname).replace(/\/$/, "");
+const config = await loadConfig(sourceRoot);
 const args = [...Deno.args];
 function option(name: string, fallback?: string): string | undefined {
   const i = args.indexOf(name);
@@ -33,7 +35,7 @@ function option(name: string, fallback?: string): string | undefined {
   if (!args[i + 1] || args[i + 1].startsWith("--")) throw Error(`${name} needs a value`);
   return args.splice(i, 2)[1];
 }
-const catalogPath = option("--catalog", `${sourceRoot}/catalog.json`)!;
+const catalogPath = option("--catalog", config.catalog ?? `${sourceRoot}/catalog.json`)!;
 const assetsRoot = catalogPath.slice(0, catalogPath.lastIndexOf("/"));
 const explicitApp = option("--app");
 const stateRoot = option(
@@ -122,7 +124,7 @@ async function helper(...argv: string[]): Promise<Record<string, unknown>> {
   }
   const mutation = argv[0] === "apply" || argv[0] === "clear";
   const result = mutation && (await processOutput("/bin/test", ["-w", argv[1]], true)).code !== 0
-    ? await adminMetadata(argv[1], binary, argv, processOutput)
+    ? await adminMetadata(argv[1], binary, argv, processOutput, config.adminHelper)
     : await processOutput(binary, argv);
   if (result.stderr.includes("sandbox_extension_issue_file failed")) {
     throw Error(
@@ -331,7 +333,13 @@ async function mutate(item: Icon, app: App, action: "apply" | "restore" | "defau
         if (backup.finderInfo === null && current === "0".repeat(64)) {
           const remove = ["-d", "com.apple.FinderInfo", app.path];
           if ((await processOutput("/bin/test", ["-w", app.path], true)).code !== 0) {
-            await adminMetadata(app.path, "/usr/bin/xattr", remove, processOutput);
+            await adminMetadata(
+              app.path,
+              "/usr/bin/xattr",
+              remove,
+              processOutput,
+              config.adminHelper,
+            );
           } else await processOutput("/usr/bin/xattr", remove);
         }
       }
@@ -519,7 +527,9 @@ async function main() {
     return;
   }
   if (command === "prompt") {
-    const style = JSON.parse(await Deno.readTextFile(`${sourceRoot}/styles/nothing/style.json`));
+    const style = JSON.parse(
+      await Deno.readTextFile(config.style ?? `${sourceRoot}/styles/nothing/style.json`),
+    );
     json({ style, app: id ? select(value) : null });
     return;
   }

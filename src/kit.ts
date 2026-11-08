@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
+import { loadConfig } from "./config.ts";
 // Kit adapter: the existing CLI remains the authority for backup, identity and mutation.
 export type IconTarget = {
   id: string;
@@ -114,7 +115,8 @@ async function main() {
     }
     return args.splice(index, 2)[1];
   }
-  const catalogPath = option("--catalog") ?? `${root}/catalog.json`;
+  const config = await loadConfig(root);
+  const catalogPath = option("--catalog") ?? config.catalog ?? `${root}/catalog.json`;
   const explicitApp = option("--app");
   const value = JSON.parse(await Deno.readTextFile(catalogPath));
   if (value.version !== 1 || !Array.isArray(value.icons)) throw Error("Unsupported catalog");

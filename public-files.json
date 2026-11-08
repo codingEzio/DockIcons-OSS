@@ -36,6 +36,7 @@
     "public-files.json",
     "scripts/public-check.ts",
     "src/admin.ts",
+    "src/config.ts",
     "src/cli.ts",
     "src/icon_tool.swift",
     "src/safe_output.ts",
@@ -46,6 +47,7 @@
     "tests/admin_test.ts",
     "tests/backup_guard_test.ts",
     "tests/corner_alpha_test.ts",
-    "tests/public_check_test.ts"
+    "tests/public_check_test.ts",
+    "tests/config_test.ts"
   ]
 }

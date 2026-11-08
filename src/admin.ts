@@ -5,8 +5,9 @@ export async function adminMetadata(
   executable: string,
   args: string[],
   run: (exe: string, args: string[]) => Promise<{ code: number; stdout: string; stderr: string }>,
+  configuredHelper?: string,
 ) {
-  const helper = Deno.env.get("X_DOCKICONS_ADMIN_HELPER");
+  const helper = Deno.env.get("X_DOCKICONS_ADMIN_HELPER") ?? configuredHelper;
   if (!helper || !helper.trim()) {
     throw Error(
       "App metadata needs administrator access. Set X_DOCKICONS_ADMIN_HELPER to a compatible administrator helper executable. Original backup is retained.",

@@ -128,3 +128,11 @@ remote 或改寫保留的私人歷史。
 
 同一 catalog
 同時新增時，鎖定中的其他新增會被拒絕。中斷後請先檢查鎖與未完成資源，勿刪除使用中的鎖。匯出不覆寫既有檔案。
+
+### 本機圖集設定
+
+選用的 `Local/config.json` 不納入 Git。`catalog`、`style`、`adminHelper`
+填入路徑；相對路徑以設定檔目錄為準。`X_DOCKICONS_CONFIG`
+指定絕對設定路徑，指定後檔案不存在即報錯。無設定時使用附帶的空圖集和風格。`--catalog`
+覆蓋設定的圖集，`X_DOCKICONS_ADMIN_HELPER` 覆蓋設定的
+helper。選定檔案缺失或設定無效時會報錯；私人圖像、圖集、備份和 helper 路徑須留在 Git 之外。

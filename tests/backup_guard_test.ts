@@ -11,7 +11,7 @@ Deno.test({
       await Deno.mkdir(`${root}/icons/nothing`, { recursive: true });
       const app = `${root}/Fixture.app`, state = `${root}/state`;
       await Deno.mkdir(app);
-      for (const name of ["cli.ts", "admin.ts", "safe_output.ts", "icon_tool.swift"]) {
+      for (const name of ["cli.ts", "admin.ts", "config.ts", "safe_output.ts", "icon_tool.swift"]) {
         await Deno.copyFile(new URL(`../src/${name}`, import.meta.url), `${root}/src/${name}`);
       }
       const digest = async (data: Uint8Array<ArrayBuffer>) =>

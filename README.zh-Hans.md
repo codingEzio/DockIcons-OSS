@@ -128,3 +128,11 @@ remote 或改写保留的私人历史。
 
 同一 catalog
 同时新增时，锁定中的其他新增会被拒绝。中断后请先检查锁与未完成资源，勿删除使用中的锁。导出不覆盖已有文件。
+
+### 本机图集配置
+
+可选的 `Local/config.json` 不纳入 Git。`catalog`、`style`、`adminHelper`
+填写路径；相对路径以配置文件目录为准。`X_DOCKICONS_CONFIG`
+指定绝对配置路径，指定后文件不存在即报错。无配置时使用附带的空图集和风格。`--catalog`
+覆盖配置图集，`X_DOCKICONS_ADMIN_HELPER` 覆盖配置的
+helper。选定文件缺失或配置无效时会报错；私人图像、图集、备份和 helper 路径须留在 Git 之外。

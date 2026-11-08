@@ -41,6 +41,10 @@ Deno.test("configured administrator helper is explicit and failure leaves no tem
     } catch (error) {
       if (!(error instanceof Error) || !error.message.includes("unavailable")) throw error;
     }
+    Deno.env.delete("X_DOCKICONS_ADMIN_HELPER");
+    const configured = await adminMetadata("/synthetic.app", "/synthetic-command", [], run, helper);
+    if (configured.stdout !== "synthetic success") throw Error("configured helper not used");
+    calls = [];
     Deno.env.set("X_DOCKICONS_ADMIN_HELPER", helper);
     const value = await adminMetadata("/synthetic.app", "/synthetic-command", [], run);
     if (

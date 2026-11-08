@@ -143,3 +143,13 @@ commands do not publish, upload, create a remote or rewrite the preserved privat
 Concurrent adds to one catalog are refused while it is locked. After interruption, inspect the lock
 and any incomplete assets before recovery; do not delete an active lock. Export never replaces an
 existing output.
+
+### Local collection configuration
+
+An optional `Local/config.json` keeps machine-specific settings out of Git. Its `catalog`, `style`,
+and `adminHelper` fields are paths; relative paths are resolved from the configuration directory.
+`X_DOCKICONS_CONFIG` selects an absolute configuration path and fails if it is missing. Without a
+configuration, the bundled starter catalog and style are used. `--catalog` overrides the configured
+catalog; `X_DOCKICONS_ADMIN_HELPER` overrides the configured helper. Missing selected files or
+invalid configuration are errors. Keep private artwork, catalogs, backups and helper paths outside
+Git.
