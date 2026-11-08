@@ -11,10 +11,11 @@ with viewer font references and no embedded images.
 `deno task public:prepare` runs the owning source checks, exporter regression and explicit source
 selection, then creates `Local/public-candidates/<seal>`. Every selected source path, byte hash and
 executable mode is recorded in `candidate-receipt.json`; reuse checks exact
-files/directories/modes/receipt and never overwrites mismatches. Unsafe mapped paths, symlinks,
-home/credential-shaped text, old asset/preview paths, raster files and embedded SVG image references
-are rejected. Tools-only scope also requires the empty starter catalog and no style reference
-images. These are selected-payload checks, not a universal secret audit.
+files/directories/receipt and safe executable modes (respecting a restrictive umask) and never
+overwrites mismatches. Unsafe mapped paths, symlinks, home/credential-shaped text, old asset/preview
+paths, raster files and embedded SVG image references are rejected. Tools-only scope also requires
+the empty starter catalog and no style reference images. These are selected-payload checks, not a
+universal secret audit.
 
 The candidate can check, lint and typecheck its sources and run its tests without the old
 collection. A disposable signed App and synthetic image were used to verify registration, apply and

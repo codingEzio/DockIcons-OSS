@@ -13,7 +13,14 @@ Deno.test("local candidate boundaries and exact readback", async () => {
     await writePolicy();
     const run = (...args: string[]) =>
       new Deno.Command(Deno.execPath(), {
-        args: ["run", "--allow-read", "--allow-write=Local", "check.ts", ...args],
+        args: [
+          "run",
+          "--allow-read",
+          "--allow-write=Local",
+          "--allow-sys=umask",
+          "check.ts",
+          ...args,
+        ],
         cwd: directory,
         stdout: "piped",
         stderr: "piped",
@@ -103,7 +110,14 @@ Deno.test("tools-only mapped starter excludes private artwork and image dependen
       Deno.writeTextFile(`${directory}/public-files.json`, JSON.stringify(policy));
     const run = (...args: string[]) =>
       new Deno.Command(Deno.execPath(), {
-        args: ["run", "--allow-read", "--allow-write=Local", "check.ts", ...args],
+        args: [
+          "run",
+          "--allow-read",
+          "--allow-write=Local",
+          "--allow-sys=umask",
+          "check.ts",
+          ...args,
+        ],
         cwd: directory,
         stdout: "piped",
         stderr: "piped",
@@ -145,5 +159,51 @@ Deno.test("tools-only mapped starter excludes private artwork and image dependen
     assert(!(await run()).success, "mapped source traversal must be rejected");
   } finally {
     await Deno.remove(directory, { recursive: true });
+  }
+});
+
+Deno.test("export respects restrictive and standard umasks", async () => {
+  for (const mask of ["022", "077"]) {
+    const directory = await Deno.makeTempDir({ prefix: "dock-export-umask-" });
+    try {
+      await Deno.copyFile(script, `${directory}/check.ts`);
+      await Deno.writeTextFile(`${directory}/sample.txt`, "synthetic fixture\n");
+      await Deno.writeTextFile(`${directory}/tool.sh`, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+      await Deno.chmod(`${directory}/tool.sh`, 0o755);
+      await Deno.writeTextFile(
+        `${directory}/public-files.json`,
+        JSON.stringify({ files: ["sample.txt", "tool.sh"] }),
+      );
+      const run = async () =>
+        await new Deno.Command("/bin/sh", {
+          args: [
+            "-c",
+            'umask "$1"; exec "$2" run --allow-read --allow-write=Local --allow-sys=umask check.ts --export',
+            "sh",
+            mask,
+            Deno.execPath(),
+          ],
+          cwd: directory,
+          stdout: "piped",
+          stderr: "piped",
+        }).output();
+      const first = await run();
+      assert(first.success, new TextDecoder().decode(first.stderr));
+      const output = new TextDecoder().decode(first.stdout).split("\n")[0].slice(
+        "Candidate: ".length,
+      );
+      const mode = (await Deno.stat(`${directory}/${output}/sample.txt`)).mode! & 0o777;
+      assert(mode === (mask === "077" ? 0o600 : 0o644), `unexpected mode ${mode.toString(8)}`);
+      const exeMode = (await Deno.stat(`${directory}/${output}/tool.sh`)).mode! & 0o777;
+      assert(
+        exeMode === (mask === "077" ? 0o700 : 0o755),
+        `unexpected executable mode ${exeMode.toString(8)}`,
+      );
+      assert((await run()).success, "restricted candidate must be reusable");
+      await Deno.chmod(`${directory}/${output}/sample.txt`, 0o666);
+      assert(!(await run()).success, "broadened write permissions must fail");
+    } finally {
+      await Deno.remove(directory, { recursive: true });
+    }
   }
 });

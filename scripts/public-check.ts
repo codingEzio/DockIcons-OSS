@@ -138,7 +138,7 @@ if (Deno.args.includes("--export")) {
       const target = `${output}/${record.path}`;
       await Deno.mkdir(target.slice(0, target.lastIndexOf("/")), { recursive: true });
       await Deno.writeFile(target, source.get(record.path)!, {
-        mode: record.executable ? 0o755 : 0o644,
+        mode: (record.executable ? 0o755 : 0o644) & ~Deno.umask(),
         createNew: true,
       });
     }
@@ -169,12 +169,20 @@ if (Deno.args.includes("--export")) {
   ) {
     throw Error("Candidate contains missing or unexpected entries; no files overwritten");
   }
+  // Git tracks executability, not group/other read bits. Accept stricter umasks, never broader modes.
+  const safeMode = (mode: number | null, executable: boolean) => {
+    if (mode === null) return true;
+    const bits = mode & 0o7777;
+    const maximum = executable ? 0o755 : 0o644;
+    const required = executable ? 0o500 : 0o400;
+    return (bits & ~maximum) === 0 && (bits & required) === required;
+  };
   for (const record of records) {
     const target = `${output}/${record.path}`;
     const stat = await Deno.stat(target);
     if (
       await hash(await Deno.readFile(target)) !== record.sha256 ||
-      (stat.mode !== null && (stat.mode & 0o777) !== (record.executable ? 0o755 : 0o644))
+      !safeMode(stat.mode, record.executable)
     ) {
       throw Error(`Candidate bytes/mode mismatch: ${record.path}; no files overwritten`);
     }
@@ -182,7 +190,7 @@ if (Deno.args.includes("--export")) {
   const receiptMode = (await Deno.stat(`${output}/candidate-receipt.json`)).mode;
   if (
     await Deno.readTextFile(`${output}/candidate-receipt.json`) !== receiptText ||
-    (receiptMode !== null && (receiptMode & 0o777) !== 0o644)
+    !safeMode(receiptMode, false)
   ) {
     throw Error("Candidate receipt mismatch; no files overwritten");
   }
