@@ -25,7 +25,7 @@ const source = new Map<string, Uint8Array>();
 // Agent instructions and history are local-only, including when mapped under another name.
 const privateNames = new Set(["agents.md", "claude.md", "plan.md", "tasks.md"]);
 const containsPrivateName = (path: string) =>
-  path.split("/").some((part) => privateNames.has(part.toLowerCase()));
+  path.split("/").some((part) => privateNames.has(part.normalize("NFKC").toLowerCase()));
 for (const path of files) {
   if (
     path.startsWith("/") || path.includes("\\") ||

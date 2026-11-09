@@ -257,7 +257,16 @@ Deno.test("export rejects private instruction names even through nested aliases"
         new TextDecoder().decode(nestedSource.stderr).includes("Private instruction source path"),
       "private directory source component must fail",
     );
-    for (const name of ["AGENTS.md", "CLAUDE.md", "PLAN.md", "TASKS.md", "aGeNtS.Md"]) {
+    for (
+      const name of [
+        "AGENTS.md",
+        "CLAUDE.md",
+        "PLAN.md",
+        "TASKS.md",
+        "aGeNtS.Md",
+        "ＡＧＥＮＴＳ.md",
+      ]
+    ) {
       await Deno.writeTextFile(`${directory}/nested/${name}`, "synthetic private instruction\n");
       const direct = await run({ files: [`nested/${name}`] });
       assert(
@@ -289,4 +298,68 @@ Deno.test("export rejects private instruction names even through nested aliases"
   } finally {
     await Deno.remove(directory, { recursive: true });
   }
+});
+
+Deno.test({
+  name: "APFS long-s alias cannot export a private instruction",
+  ignore: Deno.build.os !== "darwin",
+  async fn() {
+    const directory = await Deno.makeTempDir({ prefix: "dock-apfs-private-" });
+    try {
+      await Deno.copyFile(script, `${directory}/check.ts`);
+      await Deno.mkdir(`${directory}/nested`);
+      await Deno.writeTextFile(`${directory}/nested/AGENTS.md`, "synthetic private instruction\n");
+      const original = await Deno.stat(`${directory}/nested/AGENTS.md`);
+      let alias: Deno.FileInfo;
+      try {
+        alias = await Deno.stat(`${directory}/nested/AGENTſ.md`);
+      } catch (error) {
+        if (error instanceof Deno.errors.NotFound) return;
+        throw error;
+      }
+      assert(
+        original.dev === alias.dev && original.ino === alias.ino,
+        "fixture requires the APFS long-s alias",
+      );
+      const run = async (policy: object) => {
+        await Deno.writeTextFile(`${directory}/public-files.json`, JSON.stringify(policy));
+        return await new Deno.Command(Deno.execPath(), {
+          args: [
+            "run",
+            "--allow-read",
+            "--allow-write=Local",
+            "--allow-sys=umask",
+            "check.ts",
+            "--export",
+          ],
+          cwd: directory,
+          stdout: "piped",
+          stderr: "piped",
+        }).output();
+      };
+      const direct = await run({ files: ["nested/AGENTſ.md"] });
+      assert(
+        !direct.success &&
+          new TextDecoder().decode(direct.stderr).includes("Private instruction payload path"),
+        "APFS alias destination must fail",
+      );
+      const mapped = await run({
+        files: ["docs/public.md"],
+        sources: { "docs/public.md": "nested/AGENTſ.md" },
+      });
+      assert(
+        !mapped.success &&
+          new TextDecoder().decode(mapped.stderr).includes("Private instruction source path"),
+        "APFS alias source must fail",
+      );
+      try {
+        await Deno.lstat(`${directory}/Local`);
+        throw Error("rejected private data created an export directory");
+      } catch (error) {
+        if (!(error instanceof Deno.errors.NotFound)) throw error;
+      }
+    } finally {
+      await Deno.remove(directory, { recursive: true });
+    }
+  },
 });
