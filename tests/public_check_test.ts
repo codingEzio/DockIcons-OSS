@@ -207,3 +207,86 @@ Deno.test("export respects restrictive and standard umasks", async () => {
     }
   }
 });
+
+Deno.test("export rejects private instruction names even through nested aliases", async () => {
+  const directory = await Deno.makeTempDir({ prefix: "dock-private-policy-" });
+  try {
+    await Deno.copyFile(script, `${directory}/check.ts`);
+    await Deno.mkdir(`${directory}/nested`, { recursive: true });
+    await Deno.writeTextFile(`${directory}/nested/safe.md`, "synthetic safe text\n");
+    const run = async (policy: object) => {
+      await Deno.writeTextFile(`${directory}/public-files.json`, JSON.stringify(policy));
+      return await new Deno.Command(Deno.execPath(), {
+        args: [
+          "run",
+          "--allow-read",
+          "--allow-write=Local",
+          "--allow-sys=umask",
+          "check.ts",
+          "--export",
+        ],
+        cwd: directory,
+        stdout: "piped",
+        stderr: "piped",
+      }).output();
+    };
+    const safe = await run({
+      files: ["docs/result.md"],
+      sources: { "docs/result.md": "nested/safe.md" },
+    });
+    assert(safe.success, new TextDecoder().decode(safe.stderr));
+    const output = new TextDecoder().decode(safe.stdout).split("\n")[0].slice("Candidate: ".length);
+    assert(
+      await Deno.readTextFile(`${directory}/${output}/docs/result.md`) === "synthetic safe text\n",
+      "safe alias export",
+    );
+    const nestedDestination = await run({ files: ["nested/AGENTS.md/safe.md"] });
+    assert(
+      !nestedDestination.success &&
+        new TextDecoder().decode(nestedDestination.stderr).includes(
+          "Private instruction payload path",
+        ),
+      "private directory component must fail",
+    );
+    const nestedSource = await run({
+      files: ["docs/other.md"],
+      sources: { "docs/other.md": "nested/CLAUDE.md/safe.md" },
+    });
+    assert(
+      !nestedSource.success &&
+        new TextDecoder().decode(nestedSource.stderr).includes("Private instruction source path"),
+      "private directory source component must fail",
+    );
+    for (const name of ["AGENTS.md", "CLAUDE.md", "PLAN.md", "TASKS.md", "aGeNtS.Md"]) {
+      await Deno.writeTextFile(`${directory}/nested/${name}`, "synthetic private instruction\n");
+      const direct = await run({ files: [`nested/${name}`] });
+      assert(
+        !direct.success &&
+          new TextDecoder().decode(direct.stderr).includes("Private instruction payload path"),
+        `direct ${name} must fail`,
+      );
+      const alias = await run({
+        files: ["docs/other.md"],
+        sources: { "docs/other.md": `nested/${name}` },
+      });
+      assert(
+        !alias.success &&
+          new TextDecoder().decode(alias.stderr).includes("Private instruction source path"),
+        `source alias ${name} must fail`,
+      );
+      const renamedDestination = await run({
+        files: [`docs/${name}`],
+        sources: { [`docs/${name}`]: "nested/safe.md" },
+      });
+      assert(
+        !renamedDestination.success &&
+          new TextDecoder().decode(renamedDestination.stderr).includes(
+            "Private instruction payload path",
+          ),
+        `destination alias ${name} must fail`,
+      );
+    }
+  } finally {
+    await Deno.remove(directory, { recursive: true });
+  }
+});

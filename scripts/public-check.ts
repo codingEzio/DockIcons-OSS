@@ -22,6 +22,10 @@ const records: {
   executable: boolean;
 }[] = [];
 const source = new Map<string, Uint8Array>();
+// Agent instructions and history are local-only, including when mapped under another name.
+const privateNames = new Set(["agents.md", "claude.md", "plan.md", "tasks.md"]);
+const containsPrivateName = (path: string) =>
+  path.split("/").some((part) => privateNames.has(part.toLowerCase()));
 for (const path of files) {
   if (
     path.startsWith("/") || path.includes("\\") ||
@@ -30,6 +34,7 @@ for (const path of files) {
       p.startsWith(".env")
     )
   ) throw Error(`Unsafe payload path: ${path}`);
+  if (containsPrivateName(path)) throw Error(`Private instruction payload path: ${path}`);
   const sourcePath = policy.sources?.[path] ?? path;
   if (
     sourcePath.startsWith("/") || sourcePath.includes("\\") ||
@@ -38,6 +43,9 @@ for (const path of files) {
       p.startsWith(".env")
     )
   ) throw Error(`Unsafe source path: ${sourcePath}`);
+  if (containsPrivateName(sourcePath)) {
+    throw Error(`Private instruction source path: ${sourcePath}`);
+  }
   if (
     policy.packageKind === "tools-only" && (
       path.startsWith("icons/") || path.startsWith("docs/previews/") ||
